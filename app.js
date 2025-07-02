@@ -108,6 +108,33 @@ navigator.geolocation.getCurrentPosition(async position => {
     });
   });
 
+    // Učitaj i prikaži senzore iz sensors.json
+  const sensorResponse = await fetch('sensors.json');
+  const sensors = await sensorResponse.json();
+
+  const sensorIcon = L.icon({
+    iconUrl: 'pics/sensor.png',
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28]
+  });
+
+  sensors.forEach(sensor => {
+  const marker = L.marker([sensor.lat, sensor.lon], { icon: sensorIcon }).addTo(map);
+  marker.bindPopup(`<strong>${sensor.name}</strong><br>Reading: ${sensor.reading}`);
+
+  // Odredi boju kruga na osnovu očitavanja
+  const color = sensor.reading < 50 ? 'yellow' : 'red';
+
+  // Dodaj krug sa poluprečnikom proporcionalnim očitavanju
+  const circle = L.circle([sensor.lat, sensor.lon], {
+    color: color,
+    fillColor: color,
+    fillOpacity: 0.3,
+    radius: sensor.reading * 5  // ili neka druga vrednost za skaliranje
+  }).addTo(map);
+});
+
 
   // --- DODATO ZA DUGMAD ---
 

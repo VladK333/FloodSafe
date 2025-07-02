@@ -1,22 +1,32 @@
 [
   {
     "name": "Nadvoznjak-Temerinska",
+    "reading": 57,
     "lat": 45.268453,
     "lon": 19.842737
   },
   {
     "name": "Nadvoznjak-Kisacka",
+    "reading": 70,
     "lat": 45.266846,
     "lon": 19.834048
   },
   {
     "name": "Liman",
+    "reading": 30,
     "lat": 45.242672,
     "lon": 19.849538
   },
   {
     "name": "Rainbow Bridge",
+    "reading": 0,
     "lat": 45.254688,
     "lon": 19.855181
+  },
+  {
+    "name": "Liman3",
+    "reading": 80,
+    "lat": 45.239350,
+    "lon": 19.834603
   }
 ]
