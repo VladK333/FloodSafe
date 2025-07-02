@@ -1,7 +1,7 @@
 [
   {
     "name": "Nadvoznjak-Temerinska",
-    "reading": 57,
+    "reading": 90,
     "lat": 45.268453,
     "lon": 19.842737
   },
@@ -13,7 +13,7 @@
   },
   {
     "name": "Liman",
-    "reading": 30,
+    "reading": 61,
     "lat": 45.242672,
     "lon": 19.849538
   },
@@ -24,9 +24,9 @@
     "lon": 19.855181
   },
   {
-    "name": "Liman3",
-    "reading": 80,
-    "lat": 45.239350,
-    "lon": 19.834603
+    "name": "Bulevar",
+    "reading": 100,
+    "lat": 45.247919,
+    "lon": 19.839199
   }
 ]

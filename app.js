@@ -9,6 +9,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+let dangerZones = []; // Čuva crvene zone (lat, lon, radius)
 
 navigator.geolocation.getCurrentPosition(async position => {
   const userLat = position.coords.latitude;
@@ -50,24 +51,7 @@ navigator.geolocation.getCurrentPosition(async position => {
     marker.bindPopup('');
 
     marker.on('click', () => {
-      if (routingControl) {
-         map.removeControl(routingControl);
-        }
-
-    routingControl = L.Routing.control({
-        waypoints: [
-            L.latLng(userLat, userLon),
-            L.latLng(shelter.lat, shelter.lon)
-        ],
-        lineOptions: {
-            styles: [{ color: 'blue', weight: 4 }]
-        },
-        createMarker: () => null,
-        addWaypoints: false,
-        draggableWaypoints: false,
-        routeWhileDragging: false,
-        show: false //sakriva sidebar sa detaljima rute
-        }).addTo(map);
+      showRoute(shelter, 'blue');
     
     marker.setPopupContent(`${shelter.name}<br>Distance: ${distance} km`);
     marker.openPopup();
@@ -84,24 +68,7 @@ navigator.geolocation.getCurrentPosition(async position => {
     marker.bindPopup('');
 
     marker.on('click', () => {
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
-
-      routingControl = L.Routing.control({
-        waypoints: [
-          L.latLng(userLat, userLon),
-          L.latLng(hospital.lat, hospital.lon)
-        ],
-        lineOptions: {
-          styles: [{ color: 'red', weight: 4 }]
-        },
-        createMarker: () => null,
-        addWaypoints: false,
-        draggableWaypoints: false,
-        routeWhileDragging: false,
-        show: false //sakriva sidebar sa detaljima rute
-      }).addTo(map);
+       showRoute(hospital, 'red');
 
       marker.setPopupContent(`${hospital.name}<br>Distance: ${distance} km`);
       marker.openPopup();
@@ -124,7 +91,16 @@ navigator.geolocation.getCurrentPosition(async position => {
   marker.bindPopup(`<strong>${sensor.name}</strong><br>Reading: ${sensor.reading}`);
 
   // Odredi boju kruga na osnovu očitavanja
-  const color = sensor.reading < 50 ? 'yellow' : 'red';
+  const color = sensor.reading >= 60 && sensor.reading <= 84 ? 'yellow' : 
+              sensor.reading >= 85 ? 'red' : 'green';
+
+  if (sensor.reading >= 85) {
+  dangerZones.push({
+    lat: sensor.lat,
+    lon: sensor.lon,
+    radius: sensor.reading * 5  // isti kao kod kruga
+  });
+}
 
   // Dodaj krug sa poluprečnikom proporcionalnim očitavanju
   const circle = L.circle([sensor.lat, sensor.lon], {
@@ -153,32 +129,66 @@ navigator.geolocation.getCurrentPosition(async position => {
   }
 
   // Funkcija za prikaz rute do lokacije
-  function showRoute(destination, color) {
-    if (routingControl) {
-      map.removeControl(routingControl);
-    }
-    routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(userLat, userLon),
-        L.latLng(destination.lat, destination.lon)
-      ],
-      lineOptions: {
-        styles: [{ color: color, weight: 5 }]
-      },
-      createMarker: () => null,
-      addWaypoints: false,
-      draggableWaypoints: false,
-      routeWhileDragging: false,
-      show: false
-    }).addTo(map);
+function showRoute(destination, color) {
+  if (routingControl) {
+    map.removeControl(routingControl);
   }
+
+  function isInDangerZone(lat, lon) {
+    return dangerZones.some(zone => {
+      const dist = getDistance(lat, lon, zone.lat, zone.lon) * 1000;
+      return dist < zone.radius;
+    });
+  }
+
+  // Pomeri tačku dok ne izađe iz opasne zone
+  function findSafePoint(lat, lon) {
+    let safeLat = lat;
+    let safeLon = lon;
+    let attempts = 0;
+    const delta = 0.0015;
+
+    while (isInDangerZone(safeLat, safeLon) && attempts < 20) {
+      safeLat += delta;
+      safeLon += delta;
+      attempts++;
+    }
+
+    return { lat: safeLat, lon: safeLon };
+  }
+
+  let start = { lat: userLat, lon: userLon };
+  let end = { lat: destination.lat, lon: destination.lon };
+
+  if (isInDangerZone(start.lat, start.lon)) {
+    start = findSafePoint(start.lat, start.lon);
+  }
+
+  if (isInDangerZone(end.lat, end.lon)) {
+    end = findSafePoint(end.lat, end.lon);
+  }
+
+  routingControl = L.Routing.control({
+    waypoints: [
+      L.latLng(start.lat, start.lon),
+      L.latLng(end.lat, end.lon)
+    ],
+    lineOptions: {
+      styles: [{ color: color, weight: 5 }]
+    },
+    createMarker: () => null,
+    addWaypoints: false,
+    draggableWaypoints: false,
+    routeWhileDragging: false,
+    show: false
+  }).addTo(map);
+}
 
   // Poveži dugmad sa funkcijama
   document.getElementById('btnShelter').addEventListener('click', () => {
     const closestShelter = findClosestLocation(shelters);
     if (closestShelter) {
       showRoute(closestShelter, 'blue');
-      alert(`Najbliže sklonište: ${closestShelter.name}`);
     }
   });
 
@@ -186,7 +196,6 @@ navigator.geolocation.getCurrentPosition(async position => {
     const closestHospital = findClosestLocation(hospitals);
     if (closestHospital) {
       showRoute(closestHospital, 'red');
-      alert(`Najbliža bolnica: ${closestHospital.name}`);
     }
   });
 
