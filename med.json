@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Klinički centar Vojvodine",
+    "lat": 45.251577,
+    "lon": 19.822804
+  },
+  {
+    "name": "Dom Zdravlja Jovan Jovanović Zmaj",
+    "lat": 45.261616,
+    "lon": 19.837064
+  },
+  {
+    "name": "Dom Zdravlja Bulevar",
+    "lat": 45.254440,
+    "lon": 19.852152
+  },
+  {
+    "name": "Dom Zdravlja Novi Sad",
+    "lat": 45.240267,
+    "lon": 19.830451
+  }
+]
