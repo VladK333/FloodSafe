@@ -1,4 +1,4 @@
-// Haversine formula (udaljenost u km)
+// Haversine formula (distance in km)
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -9,12 +9,19 @@ function getDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
-let dangerZones = []; // Čuva crvene zone (lat, lon, radius)
+let dangerZones = []; // Red zones (lat, lon, radius)
 
-navigator.geolocation.getCurrentPosition(async position => {
+//live user location
+/*navigator.geolocation.getCurrentPosition(async position => {
   const userLat = position.coords.latitude;
   const userLon = position.coords.longitude;
+*/
 
+// Fixed user location
+const userLat = 45.239485;
+const userLon = 19.843993;
+
+(async () => {
   const map = L.map('map').setView([userLat, userLon], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
